@@ -19,6 +19,7 @@ The changelog for `MessageKit`. Also see the [releases](https://github.com/Messa
 - Point the README and CONTRIBUTING links at the `main` branch, repair the malformed MessageInputBar guide link and the example app badge link, and refresh the Xcode badge by [@martinpucik](https://github.com/martinpucik)
 - Rewrite the manual installation guide, which told you to run Carthage and drag a `MessageKit.xcodeproj` that no longer exists, as local Swift package steps by [@martinpucik](https://github.com/martinpucik)
 - Stop the `make` targets pinning the `iPhone 16` simulator, which broke whenever a machine or CI image shipped a different model. Builds now ask for the platform only, and the test targets resolve an installed iPhone by [@martinpucik](https://github.com/martinpucik)
+- Rewrite the FAQ answers about the missing input bar and dismissing the keyboard, which still described the `inputAccessoryView` setup that MessageKit 4.0 replaced and used removed UIKit APIs, fix the `CellTopLabel` typo, and drop the now pointless `canBecomeFirstResponder` override from the example app by [@martinpucik](https://github.com/martinpucik)
 
 ### Updated
 

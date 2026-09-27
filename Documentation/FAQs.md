@@ -10,24 +10,34 @@
 
 ## Why doesn't the `MessageInputBar` appear in my controller?
 
-If you're using the `MessagesViewController` as a child view controller then
-you have to call `becomeFirstResponder()` on your view controller. The
-reason is because the `MessageInputBar` is the `inputAccessoryView` of the
-`MessagesViewController`. This means that it is not in the view hierarchy of
-`MessagesViewController`'s root view.
+Since MessageKit 4.0 the `messageInputBar` is no longer the `inputAccessoryView` of the
+`MessagesViewController`. It lives in `inputContainerView`, a regular subview of the
+controller's root view whose position is kept above the keyboard by `keyboardManager`. You do
+not need to call `becomeFirstResponder()` or override `canBecomeFirstResponder` for it to show.
+
+If the input bar is missing, check that:
+
+- The `MessagesViewController`'s view was added to your view hierarchy, and when you use it as
+  a child view controller, that it went through the containment calls.
+- `inputBarType` is not set to a `.custom` view that has no intrinsic height.
+- You did not hide `inputContainerView` or the `messageInputBar`.
 
 ```Swift
 class ParentVC: UIViewController {
+    let childVC = MyMessagesViewController()
+
     override func viewDidLoad() {
-       super.viewDidLoad()
-       let childVC = MessagesViewController()
-       addChildViewController(childVC)
-       self.view.addSubview(childVC.view)
-       childVC.didMove(toParentViewController:self)
-       self.becomeFirstResponder()
+        super.viewDidLoad()
+        addChild(childVC)
+        view.addSubview(childVC.view)
+        childVC.view.frame = view.bounds
+        childVC.view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        childVC.didMove(toParent: self)
     }
 }
 ```
+
+The `MessageContainerController` in the example app shows a complete setup.
 
 ## How can I remove the `AvatarView` from the cell?
 
@@ -63,7 +73,7 @@ if let layout = messagesCollectionView.collectionViewLayout as? MessagesCollecti
 ## How can I move the `AvatarView` to prevent it from overlapping text in the `MessageBottomLabel` or `CellTopLabel`?
 
 If you have resized the `AvatarView` to be larger than the default size in MessageKit then you may notice that the
-`AvatarView` overlaps text either in the `MessageBottomLabel` or `CallTopLabel`. MessageKit allows the `AvatarView`
+`AvatarView` overlaps text either in the `MessageBottomLabel` or `CellTopLabel`. MessageKit allows the `AvatarView`
 to overlap this text on purpose so that users can create more complex layouts that fit their needs.
 
 If you would like to move the `AvatarView`, there are convenience methods that allow you to change the horizontal or
@@ -85,12 +95,24 @@ There are other options provided as well so take a look at the `AvatarPosition` 
 
 ## How can I dismiss the keyboard?
 
-The `MessagesViewController` needs to resign the first responder.
+The keyboard belongs to the text view of the input bar, so that is what has to resign the
+first responder. Calling `resignFirstResponder()` on the `MessagesViewController` itself has no
+effect, because the controller is never the first responder.
 
 ```Swift
-let controller = MessagesViewController()
-controller.resignFirstResponder()
+// Inside your MessagesViewController subclass
+messageInputBar.inputTextView.resignFirstResponder()
 ```
+
+If you use a custom input bar through `inputBarType`, end editing on the controller's
+view instead, which dismisses the keyboard whichever subview owns it.
+
+```Swift
+view.endEditing(true)
+```
+
+The `messagesCollectionView` uses `keyboardDismissMode = .interactive` by default, so users can
+also dismiss the keyboard by dragging the messages down.
 
 ## How can I get a reference to the `MessageType` in the `MessageCellDelegate` methods?
 

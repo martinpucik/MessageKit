@@ -28,11 +28,6 @@ final class MessageContainerController: UIViewController {
     .lightContent
   }
 
-  /// Required for the `MessageInputBar` to be visible
-  override var canBecomeFirstResponder: Bool {
-    conversationViewController.canBecomeFirstResponder
-  }
-
   let mapView = MKMapView()
 
   let bannerView: UIView = {
